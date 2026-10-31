@@ -4882,6 +4882,17 @@ input:checked + .slider:before {
 
 
 </style>
+<style id="mobileFitStyle">
+/* ===== 手机窄屏适配：整页收紧到屏幕宽度内，右侧头像 / ＋ / 发送按钮完整显示 ===== */
+@media (max-width: 768px) {
+  /* 聊天主容器改为把内边距算进宽度里，并收窄内边距，整体向左收回不再超出屏幕 */
+  .chat-container { box-sizing: border-box; padding: 10px; }
+  /* 弹窗同样收紧，避免超出屏幕 */
+  .modal-content { box-sizing: border-box; max-width: calc(100vw - 24px); }
+  /* 禁止页面左右晃动 */
+  html, body { overflow-x: hidden; }
+}
+</style>
 </head>
 <body>
 <!-- 背景图片容器 -->
