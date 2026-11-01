@@ -955,6 +955,67 @@ body {
   background-color: var(--bg-panel);
 }
 
+/* ===== 新增：表情包 / 拍一拍 的「对方 / 用户」子页签 ===== */
+.combo-subtabs-header {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px 8px;
+  border-bottom: 1px solid rgba(92,92,92,0.12);
+  flex-shrink: 0;
+}
+
+.combo-subtab-btn {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid rgba(92,92,92,0.28);
+  border-radius: 20px;
+  background: transparent;
+  font-size: 0.72rem;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.combo-subtab-btn:hover {
+  background-color: rgba(92,92,92,0.12);
+}
+
+.combo-subtab-btn.active {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.sticker-subtabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sticker-subtab-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1.5px solid rgba(92,92,92,0.28);
+  border-radius: 20px;
+  background: transparent;
+  font-size: 0.8rem;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.sticker-subtab-btn:hover {
+  background-color: rgba(92,92,92,0.1);
+}
+
+.sticker-subtab-btn.active {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 .sticker-grid-view {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1059,7 +1120,8 @@ body {
 .settings-content-vertical {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  /* 与文件2一致：顶部留出设置标题栏空间，避免模块内容被标题挡住 */
+  padding: 100px 20px 30px;
   box-sizing: border-box;
   scrollbar-width: thin;
 }
@@ -5067,7 +5129,15 @@ input:checked + .slider:before {
         <div class="sticker-picker-popover" id="user-sticker-picker">
           <div class="combo-tabs-header">
             <button class="combo-tab-btn active" data-tab="sticker">😊 表情库</button>
-            <button class="combo-tab-btn" data-tab="poke"> 拍一拍</button>
+            <button class="combo-tab-btn" data-tab="poke">✋ 拍一拍</button>
+          </div>
+          <div class="combo-subtabs-header" id="combo-sticker-subtabs">
+            <button class="combo-subtab-btn active" data-subtab="other-sticker">对方的表情</button>
+            <button class="combo-subtab-btn" data-subtab="self-sticker">用户的表情</button>
+          </div>
+          <div class="combo-subtabs-header" id="combo-poke-subtabs" style="display:none;">
+            <button class="combo-subtab-btn active" data-subtab="other-poke">对方的拍一拍</button>
+            <button class="combo-subtab-btn" data-subtab="self-poke">用户的拍一拍</button>
           </div>
           <div class="combo-content-area" id="combo-content-area"></div>
         </div>
@@ -5163,13 +5233,28 @@ input:checked + .slider:before {
         <i class="material-icons" id="icon-stickers">expand_more</i>
       </div>
       <div class="settings-section-content collapsed" id="content-stickers">
-        <p>添加图片后，对方可以随机发送这些表情包作为回复</p>
-        <div class="sticker-preview" id="stickerPreview"><div class="sticker-item" id="addStickerPlaceholder"><div class="sticker-placeholder">+</div></div></div>
-        <input type="file" id="stickerUpload" class="hidden-file-input" accept="image/*" multiple="">
-        <button class="add-sticker-btn" id="addStickerBtn">从相册添加表情包</button>
-        <p style="font-size:0.75rem; margin-top:16px; color:#888;">
-          提示：点击表情包右上角的×可以删除。已添加 <span id="stickerCount">0</span> 个表情包
-        </p>
+        <div class="sticker-subtabs">
+          <button class="sticker-subtab-btn active" data-sticker-tab="other" onclick="switchStickerSubTab('other')">📨 对方的表情包</button>
+          <button class="sticker-subtab-btn" data-sticker-tab="self" onclick="switchStickerSubTab('self')">🙋 用户的表情包</button>
+        </div>
+        <div id="sticker-subtab-other">
+          <p>添加图片后，对方可以随机发送这些表情包作为回复</p>
+          <div class="sticker-preview" id="stickerPreview"><div class="sticker-item" id="addStickerPlaceholder"><div class="sticker-placeholder">+</div></div></div>
+          <input type="file" id="stickerUpload" class="hidden-file-input" accept="image/*" multiple="">
+          <button class="add-sticker-btn" id="addStickerBtn">从相册添加表情包</button>
+          <p style="font-size:0.75rem; margin-top:16px; color:#888;">
+            提示：点击表情包右上角的×可以删除。已添加 <span id="stickerCount">0</span> 个表情包
+          </p>
+        </div>
+        <div id="sticker-subtab-self" style="display:none;">
+          <p>添加图片后，可在聊天页「＋ → 表情库 → 用户的表情」中选择发送</p>
+          <div class="sticker-preview" id="selfStickerPreview"></div>
+          <input type="file" id="selfStickerUpload" class="hidden-file-input" accept="image/*" multiple="">
+          <button class="add-sticker-btn" id="addSelfStickerBtn">从相册添加表情包</button>
+          <p style="font-size:0.75rem; margin-top:16px; color:#888;">
+            提示：点击表情包右上角的×可以删除。已添加 <span id="selfStickerCount">0</span> 个表情包
+          </p>
+        </div>
       </div>
     </div>
     
@@ -5750,37 +5835,60 @@ input:checked + .slider:before {
         <i class="material-icons" id="icon-poke">expand_more</i>
       </div>
       <div class="settings-section-content collapsed" id="content-poke">
-        <p>自定义拍一拍文案，对方将从中随机选择发送。每行一个。</p>
-        <div class="poke-controls" style="background: rgba(255,255,255,0.5); border-radius:10px; padding:16px;">
-          <div class="poke-item" style="margin-bottom:15px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-              <span>允许对方主动拍一拍</span>
-              <label class="switch">
-                <input type="checkbox" id="pokeEnableToggle">
-                <span class="slider"></span>
-              </label>
+        <div class="sticker-subtabs">
+          <button class="sticker-subtab-btn active" data-poke-tab="other" onclick="switchPokeSubTab('other')">👤 对方的拍一拍设置</button>
+          <button class="sticker-subtab-btn" data-poke-tab="self" onclick="switchPokeSubTab('self')">🙋 用户的拍一拍文案</button>
+        </div>
+        <div id="poke-subtab-other">
+          <p>自定义拍一拍文案，对方将从中随机选择发送。每行一个。</p>
+          <div class="poke-controls" style="background: rgba(255,255,255,0.5); border-radius:10px; padding:16px;">
+            <div class="poke-item" style="margin-bottom:15px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <span>允许对方主动拍一拍</span>
+                <label class="switch">
+                  <input type="checkbox" id="pokeEnableToggle">
+                  <span class="slider"></span>
+                </label>
+              </div>
             </div>
-          </div>
-          <div class="poke-item" style="margin-bottom:15px;">
-            <div class="ratio-label">
-              <span>主动拍一拍频率</span>
-              <span class="active-call-value" id="pokeFrequencyValue">20%</span>
+            <div class="poke-item" style="margin-bottom:15px;">
+              <div class="ratio-label">
+                <span>主动拍一拍频率</span>
+                <span class="active-call-value" id="pokeFrequencyValue">20%</span>
+              </div>
+              <input type="range" min="0" max="100" value="20" class="active-call-slider" id="pokeFrequencySlider">
             </div>
-            <input type="range" min="0" max="100" value="20" class="active-call-slider" id="pokeFrequencySlider">
-          </div>
-          <div class="poke-item">
-            <label class="communication-label">拍一拍文案库：</label>
-            <textarea class="tarot-textarea" id="pokePhrasesTextarea" placeholder="每行一个拍一拍后缀
+            <div class="poke-item">
+              <label class="communication-label">拍一拍文案库：</label>
+              <textarea class="tarot-textarea" id="pokePhrasesTextarea" placeholder="每行一个拍一拍后缀
 例如：
 拍了拍你
 拍了拍我的肩膀
 戳了戳我"></textarea>
-            <div class="tarot-info">
-              <span>当前文案数: <span id="pokePhraseCount">0</span></span>
+              <div class="tarot-info">
+                <span>当前文案数: <span id="pokePhraseCount">0</span></span>
+              </div>
             </div>
           </div>
+          <button class="save-phrases-btn" id="savePokeSettingsBtn" style="margin-top:10px;">保存拍一拍设置</button>
         </div>
-        <button class="save-phrases-btn" id="savePokeSettingsBtn" style="margin-top:10px;">保存拍一拍设置</button>
+        <div id="poke-subtab-self" style="display:none;">
+          <p>设置你自己可以发送的拍一拍文案，可在聊天页「＋ → 拍一拍 → 用户的拍一拍」中选择使用。每行一个。</p>
+          <div class="poke-controls" style="background: rgba(255,255,255,0.5); border-radius:10px; padding:16px;">
+            <div class="poke-item">
+              <label class="communication-label">用户拍一拍文案库：</label>
+              <textarea class="tarot-textarea" id="selfPokePhrasesTextarea" placeholder="每行一个拍一拍文案
+例如：
+拍了拍你
+轻轻戳了戳你
+拍了拍你的脑袋"></textarea>
+              <div class="tarot-info">
+                <span>当前文案数: <span id="selfPokePhraseCount">0</span></span>
+              </div>
+            </div>
+          </div>
+          <button class="save-phrases-btn" id="saveSelfPokeSettingsBtn" style="margin-top:10px;">保存用户文案</button>
+        </div>
       </div>
     </div>
     <!-- ===== 拍一拍设置模块结束 ===== -->
@@ -6130,6 +6238,9 @@ class ChatDataManager {
         this.MESSAGES_KEY = 'seven_and_wish_messages';
         this.PHRASES_KEY = 'seven_and_wish_phrases';
         this.STICKERS_KEY = 'seven_and_wish_stickers';
+        // 新增：用户（自己）的表情包 / 拍一拍文案（与对方的完全分开存）
+        this.SELF_STICKERS_KEY = 'seven_and_wish_self_stickers';
+        this.SELF_POKE_KEY = 'seven_and_wish_self_poke';
         this.SEND_SETTINGS_KEY = 'seven_and_wish_send_settings';
         this.APPEARANCE_KEY = 'seven_and_wish_appearance';
         this.BACKGROUND_KEY = 'seven_and_wish_background';
@@ -6299,6 +6410,8 @@ this.setStoredData(this.POKE_SETTINGS_KEY, {
         
         // 空的表情包
         this.setStoredData(this.STICKERS_KEY, []);
+        this.setStoredData(this.SELF_STICKERS_KEY, []);
+        this.setStoredData(this.SELF_POKE_KEY, { phrases: [] });
         
         // 已抽取塔罗牌记录
         this.setStoredData(this.DRAWN_CARDS_KEY, []);
@@ -6573,6 +6686,24 @@ getAllEnabledPhrases() {
     
     saveStickers(stickers) {
         return this.setStoredData(this.STICKERS_KEY, stickers);
+    }
+
+    // ---- 用户（自己）的表情包 ----
+    getSelfStickers() {
+        return this.getStoredData(this.SELF_STICKERS_KEY) || [];
+    }
+
+    saveSelfStickers(stickers) {
+        return this.setStoredData(this.SELF_STICKERS_KEY, stickers);
+    }
+
+    // ---- 用户（自己）的拍一拍文案 ----
+    getSelfPokeSettings() {
+        return this.getStoredData(this.SELF_POKE_KEY) || { phrases: [] };
+    }
+
+    saveSelfPokeSettings(settings) {
+        return this.setStoredData(this.SELF_POKE_KEY, settings);
     }
     
     // ---- 发送设置 ----
@@ -6849,6 +6980,9 @@ class ChatApp {
             todayDate: null,
             // 新增拍一拍设置
             pokeSettings: null,
+            // 用户（自己）的表情包 / 拍一拍文案
+            selfStickers: null,
+            selfPokeSettings: null,
             pokeTimer: null,
             // 运行时状态
             isTyping: false,
@@ -6991,6 +7125,10 @@ this.appData.responsePhrases = this.dataManager.getAllEnabledPhrases();
         
         // 加载拍一拍设置
         this.appData.pokeSettings = this.dataManager.getPokeSettings();
+
+        // 加载用户（自己）的表情包 / 拍一拍文案
+        this.appData.selfStickers = this.dataManager.getSelfStickers();
+        this.appData.selfPokeSettings = this.dataManager.getSelfPokeSettings();
         
         // 加载已抽取塔罗牌记录（Set）
         this.appData.drawnCards = this.dataManager.getDrawnCards();
@@ -7088,6 +7226,10 @@ this.appData.responsePhrases = this.dataManager.getAllEnabledPhrases();
         
         // 保存拍一拍设置
         this.dataManager.savePokeSettings(this.appData.pokeSettings);
+
+        // 保存用户（自己）的表情包 / 拍一拍文案
+        this.dataManager.saveSelfStickers(this.appData.selfStickers || []);
+        this.dataManager.saveSelfPokeSettings(this.appData.selfPokeSettings || { phrases: [] });
         // 保存已抽取塔罗牌记录
         this.dataManager.saveDrawnCards(this.appData.drawnCards);
         
@@ -7211,6 +7353,7 @@ this.appData.responsePhrases = this.dataManager.getAllEnabledPhrases();
     renderAllUI() {
         this.renderMessages();
         this.renderStickerPreview();
+        this.renderSelfStickerPreview();
         this.renderPhraseGroupsUI();
         this.renderTarotUI();
         this.renderBackgroundUI();
@@ -7224,6 +7367,7 @@ this.appData.responsePhrases = this.dataManager.getAllEnabledPhrases();
         this.initActiveCallSettingsUI();
         this.initMusicSettingsUI();
         this.renderPokeUI(); // 新增拍一拍UI
+        this.renderSelfPokeUI(); // 用户自己的拍一拍文案
         this.updateStickerCount();
         this.updatePhraseCount();
         this.updateTarotPhraseCount();
@@ -7560,6 +7704,8 @@ this.appData.responsePhrases = this.dataManager.getAllEnabledPhrases();
         stickerPreview.appendChild(addButton);
         
         this.updateStickerCount();
+        // 同步渲染用户（自己）的表情包
+        this.renderSelfStickerPreview();
     }
     
     /**
@@ -10426,6 +10572,8 @@ const delay = minDelay + Math.random() * (maxDelay - minDelay);
             groupSettings: this.appData.groupSettings,
             musicSettings: this.appData.musicSettings,
             pokeSettings: this.appData.pokeSettings, // 新增拍一拍设置
+            selfStickers: this.appData.selfStickers || [],                      // 用户自己的表情包
+            selfPokeSettings: this.appData.selfPokeSettings || { phrases: [] }, // 用户自己的拍一拍文案
             drawnCards: Array.from(this.appData.drawnCards || []),
             loveDays: this.appData.loveDays,
             readNoReplyMessageIds: this.appData.readNoReplyMessageIds,
@@ -10570,6 +10718,16 @@ if (importAllBtn) {
                         
                         // 拍一拍设置
                         if (backup.appData.pokeSettings) this.appData.pokeSettings = backup.appData.pokeSettings;
+
+                        // 用户自己的表情包 / 拍一拍文案
+                        if (backup.appData.selfStickers) {
+                            this.appData.selfStickers = backup.appData.selfStickers;
+                            this.dataManager.saveSelfStickers(this.appData.selfStickers);
+                        }
+                        if (backup.appData.selfPokeSettings) {
+                            this.appData.selfPokeSettings = backup.appData.selfPokeSettings;
+                            this.dataManager.saveSelfPokeSettings(this.appData.selfPokeSettings);
+                        }
                         
                         // 恋爱天数
                         if (backup.appData.loveDays) this.appData.loveDays = backup.appData.loveDays;
@@ -10753,6 +10911,14 @@ if (importAllBtn) {
         if (addStickerBtn && stickerUpload) {
             addStickerBtn.addEventListener('click', () => stickerUpload.click());
             stickerUpload.addEventListener('change', (e) => this.handleStickerUpload(e));
+        }
+
+        // 用户（自己）的表情包
+        const addSelfStickerBtn = document.getElementById('addSelfStickerBtn');
+        const selfStickerUpload = document.getElementById('selfStickerUpload');
+        if (addSelfStickerBtn && selfStickerUpload) {
+            addSelfStickerBtn.addEventListener('click', () => selfStickerUpload.click());
+            selfStickerUpload.addEventListener('change', (e) => this.handleSelfStickerUpload(e));
         }
         
         // 词条分组相关事件
@@ -11070,6 +11236,16 @@ if (maxDelaySlider) {
         const savePokeBtn = document.getElementById('savePokeSettingsBtn');
         if (savePokeBtn) {
             savePokeBtn.addEventListener('click', () => this.savePokeSettings());
+        }
+
+        // 用户（自己）的拍一拍文案
+        const saveSelfPokeBtn = document.getElementById('saveSelfPokeSettingsBtn');
+        if (saveSelfPokeBtn) {
+            saveSelfPokeBtn.addEventListener('click', () => this.saveSelfPokeSettings());
+        }
+        const selfPokeTextarea = document.getElementById('selfPokePhrasesTextarea');
+        if (selfPokeTextarea) {
+            selfPokeTextarea.addEventListener('input', () => this.updateSelfPokePhraseCount());
         }
         const pokeFreqSlider = document.getElementById('pokeFrequencySlider');
         const pokeFreqValue = document.getElementById('pokeFrequencyValue');
@@ -11521,12 +11697,22 @@ const delay = minDelay + Math.random() * (maxDelay - minDelay);
         const picker = document.getElementById('user-sticker-picker');
         if (!pickerBtn || !picker) return;
 
+        // 当前状态：主页签 + 表情/拍一拍各自的「对方 / 用户」子页签
+        this._pickerMainTab = 'sticker';
+        this._pickerStickerSub = 'other';
+        this._pickerPokeSub = 'other';
+
+        const stickerSubBar = document.getElementById('combo-sticker-subtabs');
+        const pokeSubBar = document.getElementById('combo-poke-subtabs');
+        if (stickerSubBar) stickerSubBar.style.display = 'flex';
+        if (pokeSubBar) pokeSubBar.style.display = 'none';
+
         // 点击按钮切换面板
         pickerBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (picker.style.display === 'none' || !picker.style.display) {
                 picker.style.display = 'flex';
-                this.renderStickerPickerContent(); // 每次打开都重新渲染
+                this._renderPickerByState(); // 每次打开都重新渲染
             } else {
                 picker.style.display = 'none';
             }
@@ -11539,36 +11725,68 @@ const delay = minDelay + Math.random() * (maxDelay - minDelay);
             }
         });
 
-        // 处理选项卡切换
+        // 主页签切换（表情库 / 拍一拍）
         const tabs = picker.querySelectorAll('.combo-tab-btn');
         tabs.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 tabs.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                const tab = btn.dataset.tab;
-                if (tab === 'sticker') {
-                    this.renderStickerPickerContent();
-                } else {
-                    // 拍一拍功能
-                    this.renderPokeTabContent();
-                }
+                this._pickerMainTab = btn.dataset.tab === 'poke' ? 'poke' : 'sticker';
+                if (stickerSubBar) stickerSubBar.style.display = this._pickerMainTab === 'sticker' ? 'flex' : 'none';
+                if (pokeSubBar) pokeSubBar.style.display = this._pickerMainTab === 'poke' ? 'flex' : 'none';
+                this._renderPickerByState();
+            });
+        });
+
+        // 表情库子页签：对方 / 用户
+        const stickerSubBtns = picker.querySelectorAll('#combo-sticker-subtabs .combo-subtab-btn');
+        stickerSubBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                stickerSubBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this._pickerStickerSub = btn.dataset.subtab === 'self-sticker' ? 'self' : 'other';
+                this._renderPickerByState();
+            });
+        });
+
+        // 拍一拍子页签：对方 / 用户
+        const pokeSubBtns = picker.querySelectorAll('#combo-poke-subtabs .combo-subtab-btn');
+        pokeSubBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                pokeSubBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this._pickerPokeSub = btn.dataset.subtab === 'self-poke' ? 'self' : 'other';
+                this._renderPickerByState();
             });
         });
     }
 
-    renderStickerPickerContent() {
+    _renderPickerByState() {
+        if (this._pickerMainTab === 'poke') {
+            this.renderPokeTabContent(this._pickerPokeSub || 'other');
+        } else {
+            this.renderStickerPickerContent(this._pickerStickerSub || 'other');
+        }
+    }
+
+    renderStickerPickerContent(who = 'other') {
         const area = document.getElementById('combo-content-area');
         if (!area) return;
-        const stickers = this.appData.stickers || [];
+        const isSelf = who === 'self';
+        const stickers = isSelf ? (this.appData.selfStickers || []) : (this.appData.stickers || []);
         if (stickers.length === 0) {
-            area.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text);">暂无表情包，请先在“设置 → 表情包库”中上传</div>';
+            area.innerHTML = isSelf
+                ? '<div style="padding:20px; text-align:center; color:var(--text);">暂无表情包，请先在“设置 → 表情包库管理 → 用户的表情包”中上传</div>'
+                : '<div style="padding:20px; text-align:center; color:var(--text);">暂无表情包，请先在“设置 → 表情包库管理 → 对方的表情包”中上传</div>';
             return;
         }
 
         let html = '<div class="sticker-grid-view">';
         stickers.forEach((sticker, index) => {
-            html += `<div class="sticker-grid-item" data-index="${index}">
+            html += `<div class="sticker-grid-item" data-index="${index}" data-who="${who}">
                         <img src="${sticker.data}" alt="表情包">
                      </div>`;
         });
@@ -11579,8 +11797,10 @@ const delay = minDelay + Math.random() * (maxDelay - minDelay);
         area.querySelectorAll('.sticker-grid-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const index = item.dataset.index;
-                const sticker = this.appData.stickers[index];
+                const list = item.dataset.who === 'self'
+                    ? (this.appData.selfStickers || [])
+                    : (this.appData.stickers || []);
+                const sticker = list[item.dataset.index];
                 if (sticker) {
                     this.sendStickerMessage(sticker.data);
                     document.getElementById('user-sticker-picker').style.display = 'none'; // 发送后关闭
@@ -11589,12 +11809,17 @@ const delay = minDelay + Math.random() * (maxDelay - minDelay);
         });
     }
 
-    renderPokeTabContent() {
+    renderPokeTabContent(who = 'other') {
         const area = document.getElementById('combo-content-area');
         if (!area) return;
-        const phrases = this.appData.pokeSettings?.phrases || ["拍了拍你"];
+        const isSelf = who === 'self';
+        const phrases = isSelf
+            ? (this.appData.selfPokeSettings?.phrases || [])
+            : (this.appData.pokeSettings?.phrases || ["拍了拍你"]);
         if (phrases.length === 0) {
-            area.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text);">暂无拍一拍文案，请先在设置中添加</div>';
+            area.innerHTML = isSelf
+                ? '<div style="padding:20px; text-align:center; color:var(--text);">暂无文案，请先在“设置 → 拍一拍设置 → 用户的拍一拍文案”中添加</div>'
+                : '<div style="padding:20px; text-align:center; color:var(--text);">暂无拍一拍文案，请先在设置中添加</div>';
             return;
         }
 
@@ -11611,12 +11836,106 @@ const delay = minDelay + Math.random() * (maxDelay - minDelay);
         area.querySelectorAll('[data-poke-index]').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const index = item.dataset.pokeIndex;
-                const suffix = phrases[index];
+                const suffix = phrases[item.dataset.pokeIndex];
                 this.sendPokeMessage('self', suffix);
                 document.getElementById('user-sticker-picker').style.display = 'none'; // 发送后关闭
             });
         });
+    }
+
+    // ========================
+    // 用户（自己）的表情包
+    // ========================
+    renderSelfStickerPreview() {
+        const preview = document.getElementById('selfStickerPreview');
+        if (!preview) return;
+        preview.innerHTML = '';
+
+        (this.appData.selfStickers || []).forEach(sticker => {
+            const item = document.createElement('div');
+            item.className = 'sticker-item';
+            item.innerHTML = `
+                <img src="${sticker.data}" alt="表情包">
+                <button class="delete-sticker" data-id="${sticker.id}">×</button>
+            `;
+
+            item.querySelector('.delete-sticker').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.appData.selfStickers = (this.appData.selfStickers || []).filter(s => s.id !== sticker.id);
+                this.renderSelfStickerPreview();
+                this.saveAllData();
+                this.showNotification('用户表情包已删除');
+            });
+
+            preview.appendChild(item);
+        });
+
+        // 末尾「+」添加按钮
+        const addButton = document.createElement('div');
+        addButton.className = 'sticker-item';
+        addButton.innerHTML = '<div class="sticker-placeholder">+</div>';
+        addButton.addEventListener('click', () => document.getElementById('selfStickerUpload')?.click());
+        preview.appendChild(addButton);
+
+        const countEl = document.getElementById('selfStickerCount');
+        if (countEl) countEl.textContent = (this.appData.selfStickers || []).length;
+    }
+
+    handleSelfStickerUpload(e) {
+        const files = e.target.files;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            this.compressImage(file, { maxWidth: 200, maxHeight: 200, quality: 0.6 })
+                .then(compressedDataUrl => {
+                    const stickerData = {
+                        id: Date.now() + i,
+                        data: compressedDataUrl,
+                        name: file.name
+                    };
+
+                    if (!this.appData.selfStickers) this.appData.selfStickers = [];
+                    this.appData.selfStickers.push(stickerData);
+
+                    this.renderSelfStickerPreview();
+                    this.saveAllData();
+                    this.showNotification(`已添加用户表情包: ${file.name}`);
+                });
+        }
+
+        e.target.value = '';
+    }
+
+    // ========================
+    // 用户（自己）的拍一拍文案
+    // ========================
+    renderSelfPokeUI() {
+        const textarea = document.getElementById('selfPokePhrasesTextarea');
+        if (textarea) {
+            textarea.value = (this.appData.selfPokeSettings?.phrases || []).join('\n');
+        }
+        this.updateSelfPokePhraseCount();
+    }
+
+    updateSelfPokePhraseCount() {
+        const textarea = document.getElementById('selfPokePhrasesTextarea');
+        const countSpan = document.getElementById('selfPokePhraseCount');
+        if (!textarea || !countSpan) return;
+        const text = textarea.value.trim();
+        const phrases = text ? text.split('\n').map(p => p.trim()).filter(p => p) : [];
+        countSpan.textContent = phrases.length;
+    }
+
+    saveSelfPokeSettings() {
+        const textarea = document.getElementById('selfPokePhrasesTextarea');
+        if (!this.appData.selfPokeSettings) this.appData.selfPokeSettings = { phrases: [] };
+        const text = textarea ? textarea.value.trim() : '';
+        const phrases = text ? text.split('\n').map(p => p.trim()).filter(p => p) : [];
+        this.appData.selfPokeSettings.phrases = phrases;
+        this.updateSelfPokePhraseCount();
+        this.saveAllData();
+        this.showNotification('用户拍一拍文案已保存');
     }
 
     sendStickerMessage(stickerData) {
@@ -12624,6 +12943,31 @@ function toggleSection(sectionId) {
         header.classList.toggle('collapsed');
         icon.textContent = content.classList.contains('collapsed') ? 'expand_more' : 'expand_less';
     }
+}
+
+// ========================
+// 设置面板里的「对方 / 用户」子页签切换
+// ========================
+function switchStickerSubTab(tab) {
+    const otherPanel = document.getElementById('sticker-subtab-other');
+    const selfPanel  = document.getElementById('sticker-subtab-self');
+    if (!otherPanel || !selfPanel) return;
+    otherPanel.style.display = tab === 'self' ? 'none' : '';
+    selfPanel.style.display  = tab === 'self' ? '' : 'none';
+    if (tab === 'self' && window.chatApp) window.chatApp.renderSelfStickerPreview();
+    document.querySelectorAll('.sticker-subtabs .sticker-subtab-btn[data-sticker-tab]')
+        .forEach(b => b.classList.toggle('active', b.dataset.stickerTab === tab));
+}
+
+function switchPokeSubTab(tab) {
+    const otherPanel = document.getElementById('poke-subtab-other');
+    const selfPanel  = document.getElementById('poke-subtab-self');
+    if (!otherPanel || !selfPanel) return;
+    otherPanel.style.display = tab === 'self' ? 'none' : '';
+    selfPanel.style.display  = tab === 'self' ? '' : 'none';
+    if (tab === 'self' && window.chatApp) window.chatApp.renderSelfPokeUI();
+    document.querySelectorAll('.sticker-subtabs .sticker-subtab-btn[data-poke-tab]')
+        .forEach(b => b.classList.toggle('active', b.dataset.pokeTab === tab));
 }
 
 // ========================
